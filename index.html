@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Çilek Kaçışı</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="menu">
+  <div id="menuContent">
+    <h1>🍓 KAÇIŞ OYUNU 🍩</h1>
+    <p>Karakterini seç ve maceraya atıl!</p>
+
+    <div class="charSelect">
+      <div class="charBtn" data-char="cilek">
+        <div class="charIcon">🍓</div>
+        <div class="charName">Çilek</div>
+        <div class="charDesc">Hızlı ve çevik</div>
+      </div>
+
+      <div class="charBtn" data-char="ekler">
+        <div class="charIcon">🍩</div>
+        <div class="charName">Ekler</div>
+        <div class="charDesc">Güçlü dash</div>
+      </div>
+    </div>
+
+    <button id="startBtn" disabled>🎮 Oyuna Başla</button>
+
+    <div class="controls">
+      <p>
+        <span class="key">WASD</span> Hareket •
+        <span class="key">SPACE</span> Zıpla •
+        <span class="key">Q</span> Dash •
+        <span class="key">Mouse</span> Kamera
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="ui">
+  <div id="time">⏱️ Süre: <span id="t">0.0</span>s</div>
+  <div id="dash">⚡ Dash: <span id="dashText">Hazır</span></div>
+  <div id="dashBar"><div id="dashFill"></div></div>
+</div>
+
+<div id="over">
+  <div>😱 YAKALANDIN!</div>
+  <div>Süre: <span id="finalTime"></span>s</div>
+  <button onclick="location.reload()">🔄 Tekrar Oyna</button>
+</div>
+
+<div id="crosshair"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module" src="game.js"></script>
+</body>
+</html>
