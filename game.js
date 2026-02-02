@@ -7,43 +7,86 @@ let selectedChar = null;
 let gameActive = false;
 let score = 0;
 
-// Hız ve Mekanik Ayarları
-let baseSpeed = 20;
-let currentSpeed = 20;
-let enemyBaseSpeed = 13;
-let currentEnemySpeed = 13;
+// Karakter bilgileri
+let playerImageUrl = '';
+let enemyImageUrl = '';
+let playerName = '';
+let enemyName = '';
+
+// Fizik
+let baseSpeed = 22;
+let currentSpeed = 22;
+let enemyBaseSpeed = 15;
+let currentEnemySpeed = 15;
 let velY = 0;
 const GRAV = 40;
 
+// Dash
 let canDash = true;
 let isDashing = false;
-let isEnemyDashing = false; 
-let dashCooldown = 2000;
-let hasSpedUp = false; 
+let dashCooldown = 2500;
 
+// Mobil kontroller
+let joystickActive = false;
+let joystickX = 0;
+let joystickY = 0;
+let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// Karakter seçimi
 document.querySelectorAll('.charBtn').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.charBtn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedChar = btn.dataset.char;
     document.getElementById('startBtn').disabled = false;
-    // Seçim hızlarını yine de ayarla
-    baseSpeed = selectedChar === "cilek" ? 24 : 19;
+
+    if (selectedChar === "sule") {
+      playerImageUrl = 'imgs/ddeed.jpg';
+      enemyImageUrl = 'imgs/Ogi.jpeg';
+      playerName = 'Şule';
+      enemyName = 'Ogi';
+    } else {
+      playerImageUrl = 'imgs/Ogi.jpeg';
+      enemyImageUrl = 'imgs/ddeed.jpg';
+      playerName = 'Ogi';
+      enemyName = 'Şule';
+    }
   };
 });
 
+// Oyunu başlat
 document.getElementById('startBtn').onclick = () => {
   if (!selectedChar) return;
+  
   document.getElementById('menu').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
+  
+  // Mobil kontrolleri sadece mobil cihazlarda göster
+  if (isMobile) {
+    document.getElementById('mobileControls').style.display = 'block';
+  }
+  
+  document.getElementById('playerName').innerText = playerName;
+  document.getElementById('enemyName').innerText = enemyName;
+  
+  // Mobil için landscape modunu teşvik et
+  if (isMobile && screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(() => {
+      // Orientation lock başarısız olursa devam et
+    });
+  }
+  
   init();
+  if (isMobile) {
+    setupMobileControls();
+  }
   gameActive = true;
   animate();
 };
 
 function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87CEEB); 
+  scene.background = new THREE.Color(0x87CEEB);
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -63,56 +106,131 @@ function init() {
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
-  // === KAÇAN KARAKTER (OYUNCU) - ddeed.jpg YAPILDI ===
-  const playerGeo = new THREE.PlaneGeometry(5, 7); // Boyutu isteğine göre ayarlayabilirsin
+  // Oyuncu
+  const playerGeo = new THREE.PlaneGeometry(5, 7);
   const playerMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
   player = new THREE.Mesh(playerGeo, playerMat);
-  player.position.y = 3.5; // Zeminden yükseklik
+  player.position.y = 3.5;
   scene.add(player);
 
-  new THREE.TextureLoader().load('imgs/ddeed.jpg', (t) => {
-    player.material.map = t;
+  new THREE.TextureLoader().load(playerImageUrl, (texture) => {
+    player.material.map = texture;
     player.material.needsUpdate = true;
   });
 
-  // === KOVALAYAN KARAKTER (DÜŞMAN) ===
+  // Düşman
   const enemyGeo = new THREE.PlaneGeometry(6, 8);
   const enemyMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
   enemy = new THREE.Mesh(enemyGeo, enemyMat);
   enemy.position.set(50, 4, -50);
   scene.add(enemy);
 
-  new THREE.TextureLoader().load('imgs/Ogi.jpeg', (t) => {
-    enemy.material.map = t;
+  new THREE.TextureLoader().load(enemyImageUrl, (texture) => {
+    enemy.material.map = texture;
     enemy.material.needsUpdate = true;
   });
 
   window.addEventListener('keydown', e => keys[e.code] = true);
   window.addEventListener('keyup', e => keys[e.code] = false);
+  window.addEventListener('resize', onWindowResize);
+  
   clock = new THREE.Clock();
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function setupMobileControls() {
+  const joystickContainer = document.getElementById('joystickContainer');
+  const joystickStick = document.getElementById('joystickStick');
+  const jumpBtn = document.getElementById('jumpBtn');
+  const dashBtn = document.getElementById('dashBtn');
+  
+  let joystickCenterX = 0;
+  let joystickCenterY = 0;
+  const maxDistance = 40;
+  
+  // Joystick touch events
+  joystickContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    joystickActive = true;
+    const rect = joystickContainer.getBoundingClientRect();
+    joystickCenterX = rect.left + rect.width / 2;
+    joystickCenterY = rect.top + rect.height / 2;
+  });
+  
+  joystickContainer.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!joystickActive) return;
+    
+    const touch = e.touches[0];
+    let deltaX = touch.clientX - joystickCenterX;
+    let deltaY = touch.clientY - joystickCenterY;
+    
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    if (distance > maxDistance) {
+      deltaX = (deltaX / distance) * maxDistance;
+      deltaY = (deltaY / distance) * maxDistance;
+    }
+    
+    joystickX = deltaX / maxDistance;
+    joystickY = deltaY / maxDistance;
+    
+    joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+  });
+  
+  const resetJoystick = () => {
+    joystickActive = false;
+    joystickX = 0;
+    joystickY = 0;
+    joystickStick.style.transform = 'translate(-50%, -50%)';
+  };
+  
+  joystickContainer.addEventListener('touchend', resetJoystick);
+  joystickContainer.addEventListener('touchcancel', resetJoystick);
+  
+  // Jump button
+  jumpBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    keys.Space = true;
+  });
+  
+  jumpBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    keys.Space = false;
+  });
+  
+  // Dash button
+  dashBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    performDash();
+  });
 }
 
 function performDash() {
   if (!canDash || isDashing) return;
   isDashing = true;
-  isEnemyDashing = true; 
   canDash = false;
-  
+
   const dashFill = document.getElementById('dashFill');
-  if(dashFill) {
-      dashFill.style.transition = 'none';
-      dashFill.style.width = '0%';
-      dashFill.style.backgroundColor = '#ff4444';
+  if (dashFill) {
+    dashFill.style.transition = 'none';
+    dashFill.style.width = '0%';
+    dashFill.style.background = 'linear-gradient(90deg, #ff4444, #ff6b6b)';
   }
 
-  setTimeout(() => { isDashing = false; isEnemyDashing = false; }, 200);
-  
+  setTimeout(() => isDashing = false, 250);
+
   setTimeout(() => {
     canDash = true;
-    if(dashFill) {
-        dashFill.style.transition = 'width 1.5s linear';
-        dashFill.style.width = '100%';
-        dashFill.style.backgroundColor = '#44ff44';
+    if (dashFill) {
+      dashFill.style.transition = 'width 2s linear';
+      dashFill.style.width = '100%';
+      dashFill.style.background = 'linear-gradient(90deg, #4caf50, #8bc34a)';
     }
   }, dashCooldown);
 }
@@ -125,53 +243,69 @@ function animate() {
   score += dt;
   document.getElementById('t').innerText = score.toFixed(1);
 
-  // 10 Saniye Sonra Ekstra Hızlanma
-  if (score >= 10 && !hasSpedUp) {
-    enemyBaseSpeed += 7; 
-    hasSpedUp = true;
-  }
-
-  // Her 3 Saniyede Bir Hızlanma
+  // Hızlanma
   let periodicSpeedBoost = Math.floor(score / 3) * 1.5;
   currentSpeed = baseSpeed + (score * 0.2);
   currentEnemySpeed = enemyBaseSpeed + (score * 0.25) + periodicSpeedBoost;
 
   let moveX = 0;
   let moveZ = 0;
-  let activeSpeed = isDashing ? currentSpeed * 4 : currentSpeed;
-  let activeEnemySpeed = isEnemyDashing ? currentEnemySpeed * 2.5 : currentEnemySpeed;
+  let activeSpeed = isDashing ? currentSpeed * 3.5 : currentSpeed;
+  let activeEnemySpeed = currentEnemySpeed;
 
+  // Klavye kontrolü
   if (keys.KeyW) moveZ -= 1;
   if (keys.KeyS) moveZ += 1;
   if (keys.KeyA) moveX -= 1;
   if (keys.KeyD) moveX += 1;
   if (keys.KeyQ) performDash();
+  
+  // Joystick kontrolü (mobil)
+  if (joystickActive) {
+    moveX += joystickX;
+    moveZ += joystickY;
+  }
 
   if (moveX !== 0 || moveZ !== 0) {
     const direction = new THREE.Vector3(moveX, 0, moveZ).normalize();
     player.position.x += direction.x * activeSpeed * dt;
     player.position.z += direction.z * activeSpeed * dt;
-    // Karakter resim olduğu için kameraya bakması daha iyi olur
-    player.rotation.y = Math.atan2(direction.x, direction.z);
+    player.lookAt(camera.position.x, player.position.y, camera.position.z);
   }
 
   // Zıplama
-  if (keys.Space && player.position.y <= 3.55) velY = 16;
+  if (keys.Space && player.position.y <= 3.55) {
+    velY = 16;
+    keys.Space = false;
+  }
   velY -= GRAV * dt;
   player.position.y += velY * dt;
-  if (player.position.y < 3.5) { player.position.y = 3.5; velY = 0; }
+  if (player.position.y < 3.5) { 
+    player.position.y = 3.5; 
+    velY = 0; 
+  }
 
   // Düşman Takibi
   const toPlayer = new THREE.Vector3().subVectors(player.position, enemy.position).normalize();
   enemy.position.x += toPlayer.x * activeEnemySpeed * dt;
   enemy.position.z += toPlayer.z * activeEnemySpeed * dt;
-  enemy.lookAt(player.position.x, enemy.position.y, player.position.z);
+  enemy.lookAt(camera.position.x, enemy.position.y, camera.position.z);
 
   // Kamera
-  camera.position.lerp(new THREE.Vector3(player.position.x, player.position.y + 12, player.position.z + 22), 0.1);
+  camera.position.lerp(
+    new THREE.Vector3(
+      player.position.x, 
+      player.position.y + 12, 
+      player.position.z + 22
+    ), 
+    0.1
+  );
   camera.lookAt(player.position);
 
-  if (player.position.distanceTo(enemy.position) < 3.5) gameOver();
+  // Yakalanma kontrolü
+  if (player.position.distanceTo(enemy.position) < 4.5) {
+    gameOver();
+  }
 
   renderer.render(scene, camera);
 }
