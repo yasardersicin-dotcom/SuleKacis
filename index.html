@@ -2,56 +2,86 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Çilek Kaçışı</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🏃 Şule vs Ogi - Kaçış Oyunu</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="menu">
   <div id="menuContent">
-    <h1>🍓 KAÇIŞ OYUNU 🍩</h1>
-    <p>Karakterini seç ve maceraya atıl!</p>
+    <h1>🏃 KAÇIŞ OYUNU 🏃</h1>
+    <p>Kim olarak oynamak istersin?</p>
 
     <div class="charSelect">
-      <div class="charBtn" data-char="cilek">
-        <div class="charIcon">🍓</div>
-        <div class="charName">Çilek</div>
-        <div class="charDesc">Hızlı ve çevik</div>
+      <div class="charBtn" data-char="sule">
+        <div class="charIcon">👧</div>
+        <div class="charName">Şule</div>
+        <div class="charDesc">Ogi'den kaç!</div>
       </div>
 
-      <div class="charBtn" data-char="ekler">
-        <div class="charIcon">🍩</div>
-        <div class="charName">Ekler</div>
-        <div class="charDesc">Güçlü dash</div>
+      <div class="charBtn" data-char="ogi">
+        <div class="charIcon">👨</div>
+        <div class="charName">Ogi</div>
+        <div class="charDesc">Şule'den kaç!</div>
       </div>
     </div>
 
-    <button id="startBtn" disabled>🎮 Oyuna Başla</button>
+    <button id="startBtn" disabled>🎮 OYUNA BAŞLA</button>
 
     <div class="controls">
       <p>
-        <span class="key">WASD</span> Hareket •
-        <span class="key">SPACE</span> Zıpla •
-        <span class="key">Q</span> Dash •
-        <span class="key">Mouse</span> Kamera
+        <span class="key">Joystick</span> Hareket •
+        <span class="key">🦘</span> Zıpla •
+        <span class="key">⚡</span> Dash
       </p>
     </div>
   </div>
 </div>
 
 <div id="ui">
+  <div id="playerInfo">
+    <span id="playerName">Şule</span> olarak oynuyorsun
+  </div>
   <div id="time">⏱️ Süre: <span id="t">0.0</span>s</div>
   <div id="dash">⚡ Dash: <span id="dashText">Hazır</span></div>
   <div id="dashBar"><div id="dashFill"></div></div>
 </div>
 
-<div id="over">
-  <div>😱 YAKALANDIN!</div>
-  <div>Süre: <span id="finalTime"></span>s</div>
-  <button onclick="location.reload()">🔄 Tekrar Oyna</button>
+<!-- MOBİL KONTROLLER -->
+<div id="mobileControls">
+  <!-- Joystick -->
+  <div id="joystickContainer">
+    <div id="joystickBase"></div>
+    <div id="joystickStick"></div>
+  </div>
+  
+  <!-- Sağ taraf butonları -->
+  <div id="rightButtons">
+    <button id="jumpBtn" class="gameBtn">
+      <span>🦘</span>
+      <small>Zıpla</small>
+    </button>
+    <button id="dashBtn" class="gameBtn">
+      <span>⚡</span>
+      <small>Dash</small>
+    </button>
+  </div>
 </div>
 
-<div id="crosshair"></div>
+<div id="over">
+  <div id="gameOverTitle">😱 YAKALANDIN!</div>
+  <div id="gameOverInfo">
+    <span id="enemyName">Ogi</span> seni yakaladı!
+  </div>
+  <div style="font-size:28px; margin-top:15px; font-weight:600">
+    Süre: <span id="finalTime"></span> saniye
+  </div>
+  <button onclick="location.reload()">🔄 Tekrar Oyna</button>
+</div>
 
 <script type="importmap">
 {
@@ -62,5 +92,6 @@
 </script>
 
 <script type="module" src="game.js"></script>
+
 </body>
 </html>
