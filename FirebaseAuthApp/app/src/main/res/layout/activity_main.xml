@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/textViewWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hos Geldiniz!"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="100dp" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardUserInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewWelcome"
+        android:layout_marginTop="40dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kullanici Bilgileri"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/textViewEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="E-posta: "
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/textViewUid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kullanici ID: "
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="CIKIS YAP"
+        android:textSize="16sp"
+        android:backgroundTint="@color/logout_red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="32dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
